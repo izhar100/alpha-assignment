@@ -1,4 +1,4 @@
-import { Box, Button, Flex, Heading } from '@chakra-ui/react';
+import { Box, Button, Flex, Heading, Spinner } from '@chakra-ui/react';
 import React, { useState, useEffect } from 'react';
 import Product from './Product';
 import { store } from '../redux/store';
@@ -8,9 +8,11 @@ import { useNavigate } from 'react-router-dom';
 function ProductList() {
   const [products, setProducts] = useState([]);
 
-  const navigate=useNavigate()
+  const navigate = useNavigate()
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
+    setLoading(true)
     fetch('https://alphabackend-lsvs.onrender.com/get', {
       method: 'POST',
       headers: {
@@ -24,27 +26,43 @@ function ProductList() {
       })
     })
       .then((response) => response.json())
-      .then((data) =>{ 
+      .then((data) => {
         setProducts(data.products)
-    })
+        setLoading(false)
+      })
       .catch((error) => console.error('Error:', error));
   }, []);
 
-  useEffect(()=>{
+  useEffect(() => {
     console.log(products)
-  },[])
+  }, [])
 
   return (
     <div>
       <Heading textAlign={"center"}>Product List</Heading>
       <br />
-      <Box w={"80%"} m={'auto'} display={"grid"} gridTemplateColumns={{xl:"repeat(4,1fr)",lg:"repeat(4,1fr)",md:"repeat(2,1fr)",sm:"repeat(1,1fr)",base:"repeat(1,1fr)"}}
-      gap={"30px"}
-      >
-        {products?.map((product) => (
-          <Product key={product._id} product={product}/>
-        ))}
-        </Box>
+      {
+        loading
+          ?
+          <Flex justifyContent={"center"} alignItems={"center"}>
+            <Spinner
+              thickness='4px'
+              speed='0.65s'
+              emptyColor='gray.200'
+              color='blue.500'
+              size='xl'
+            />
+          </Flex>
+          :
+          <Box w={"80%"} m={'auto'} display={"grid"} gridTemplateColumns={{ xl: "repeat(4,1fr)", lg: "repeat(4,1fr)", md: "repeat(2,1fr)", sm: "repeat(1,1fr)", base: "repeat(1,1fr)" }}
+            gap={"30px"}
+          >
+            {products?.map((product) => (
+              <Product key={product._id} product={product} />
+            ))}
+          </Box>
+
+      }
     </div>
   );
 }
